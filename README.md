@@ -19,3 +19,4 @@ The last mentioned bit is what I'm trying to stay away from - it'll work like th
 
 Anyway, if you can figure out why the module references are failing as I've done them, let me know please!
 
+[!!] Hacky way has been added and is working - but i haven't given up on the cool way yet...
