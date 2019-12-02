@@ -276,8 +276,9 @@ namespace netrefject
         private void evilMethod()
         {
             //Console.WriteLine("[!!] I am evilMethod starting");
-            var hello = "hello";
             
+            var hello = "hello";
+
             //Meterpreter testing code taken from 
             //https://github.com/OJ/clr-meterpreter
             /*
