@@ -1,1 +1,7 @@
-HELLO
+netrefject is a small POC to show how to use Mono.Cecil to inject
+.Net payloads into .Net assemblies if you have write access to those assemblies 
+
+(And I assume they need to be unsigned but I haven't tested - though it seems obvious)
+
+
+I have not seen this functionality in various C2/payload frameworks yet, just in-memory injection

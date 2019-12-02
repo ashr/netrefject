@@ -1,0 +1,53 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.0",
+    "signature": "a7324408a5362f352db47a7d32bd44846a4cfdf7"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.0": {
+      "netrefject-control/1.0.0": {
+        "dependencies": {
+          "Mono.Cecil": "0.11.1"
+        },
+        "runtime": {
+          "netrefject-control.dll": {}
+        }
+      },
+      "Mono.Cecil/0.11.1": {
+        "runtime": {
+          "lib/netstandard2.0/Mono.Cecil.Mdb.dll": {
+            "assemblyVersion": "0.11.1.0",
+            "fileVersion": "0.11.1.0"
+          },
+          "lib/netstandard2.0/Mono.Cecil.Pdb.dll": {
+            "assemblyVersion": "0.11.1.0",
+            "fileVersion": "0.11.1.0"
+          },
+          "lib/netstandard2.0/Mono.Cecil.Rocks.dll": {
+            "assemblyVersion": "0.11.1.0",
+            "fileVersion": "0.11.1.0"
+          },
+          "lib/netstandard2.0/Mono.Cecil.dll": {
+            "assemblyVersion": "0.11.1.0",
+            "fileVersion": "0.11.1.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "netrefject-control/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Mono.Cecil/0.11.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RWBcccuMn8gxAasJxBBAb848qkt3S2t/7bEaEXtxQU6ROv1v0p7kk3+Xga4G+k+bKbLBla1bsrUt+8pAccaDwQ==",
+      "path": "mono.cecil/0.11.1",
+      "hashPath": "mono.cecil.0.11.1.nupkg.sha512"
+    }
+  }
+}
