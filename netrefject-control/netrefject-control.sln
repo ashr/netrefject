@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.47
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "netrefject-control", "netrefject-control.csproj", "{979F19EC-689B-427E-8AF4-8AEA0D4ECEC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testlibrary", "..\testlibrary\testlibrary.csproj", "{0B112767-2E7F-41E2-BF46-BC7675A693BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{979F19EC-689B-427E-8AF4-8AEA0D4ECEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{979F19EC-689B-427E-8AF4-8AEA0D4ECEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{979F19EC-689B-427E-8AF4-8AEA0D4ECEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{979F19EC-689B-427E-8AF4-8AEA0D4ECEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B112767-2E7F-41E2-BF46-BC7675A693BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B112767-2E7F-41E2-BF46-BC7675A693BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B112767-2E7F-41E2-BF46-BC7675A693BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B112767-2E7F-41E2-BF46-BC7675A693BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14E9C4F5-58F5-4CE7-BDFE-CCF79936937B}
+	EndGlobalSection
+EndGlobal
