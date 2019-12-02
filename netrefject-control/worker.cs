@@ -178,11 +178,9 @@ namespace netrefject
                     {
                         if (instructions[iI].OpCode.Code != Code.Ret)
                         {
+                            //If it's a call, we need to find out which method is called and import that method on the fly
                             if (instructions[iI].OpCode.Code == Code.Call){
-                                var call = ilp.Create (OpCodes.Call,
-                                m1.Module.Import (
-                                    typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) })));
-
+                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],m1));
                                 ilp.InsertBefore(retCall,call);
                             }
                             else
@@ -207,6 +205,15 @@ namespace netrefject
             MethodDefinition m1 = targetType.Methods.FirstOrDefault(x => x.Name == "evilMethod");
             Console.WriteLine("Evil Instruction Count:" + m1.Body.Instructions.Count.ToString());
             return m1.Body.Instructions.ToArray();
+        }
+
+        private MethodReference getMethodImportBasedOnOperand (Instruction i, MethodDefinition m1){
+            MethodReference md = null;
+
+            //Choose which method to import and Import here...
+            md = m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+
+            return md;
         }
 
         private void importEvilMethodClasses(MethodDefinition m1){
