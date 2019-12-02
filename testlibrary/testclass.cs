@@ -6,12 +6,12 @@ namespace testlibrary
     {
         public Testclass()
         {
-            Console.WriteLine("This is Contructor");
+            Console.WriteLine("This is Constructor");
         }
 
         public void TestMethod()
         {
-            Console.WriteLine("This is test method");
+            //Console.WriteLine("This is test method");
         }
     }
 }

