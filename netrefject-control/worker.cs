@@ -164,7 +164,7 @@ namespace netrefject
             int originaInstructionCount = m1.Body.Instructions.Count;
 
             //importEvilMethodClasses(m1);
-            m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+            //m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
             
             for (int i = 0; i < originaInstructionCount; i++)
             {
@@ -178,7 +178,15 @@ namespace netrefject
                     {
                         if (instructions[iI].OpCode.Code != Code.Ret)
                         {
-                            ilp.InsertBefore(retCall,instructions[iI]);
+                            if (instructions[iI].OpCode.Code == Code.Call){
+                                var call = ilp.Create (OpCodes.Call,
+                                m1.Module.Import (
+                                    typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) })));
+
+                                ilp.InsertBefore(retCall,call);
+                            }
+                            else
+                                ilp.InsertBefore(retCall,instructions[iI]);
                         }
                     }
                 }
@@ -275,7 +283,7 @@ namespace netrefject
         }
         private void evilMethod()
         {
-            //Console.WriteLine("[!!] I am evilMethod starting");
+            Console.WriteLine("[!!] I am evilMethod starting");
             
             var hello = "hello";
 
