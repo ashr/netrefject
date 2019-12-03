@@ -9,6 +9,20 @@ I have not seen this functionality in various C2/payload frameworks yet, just in
 This project is being developed on Linux with vscode, running dotnet core 2, 
 just committed a fix to allow you to debug with vscode and be able to send stdinput during debugging. 
 
+
+[Current State]
+
+I have commented out the bulky module selection stuff to debug the current code to fix what i've mentioned below
+
+The current state works by injecting a Console.WriteLine as you can see from the screenshot
+
+Seems like my ideas are working, just need to kill ze bugs
+
+![injected-evil](./injected-evil.png)
+
+[End Current]
+
+
 The module import code (Injecting Extern calls to native .Net methods) has been modified to import 
 and add the extern calls, but there is an issue - if you can help - hook me up please.
 
