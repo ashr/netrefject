@@ -11,7 +11,7 @@ namespace testlibrary
 
         public void TestMethod()
         {
-            //Console.WriteLine("This is test method");
+            Console.WriteLine("This is test method");
         }
     }
 }
