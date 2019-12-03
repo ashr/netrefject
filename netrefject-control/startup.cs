@@ -19,8 +19,7 @@ public static class Startup
             Worker.syntax();
             return;
         }*/
-        //string filename = @"C:\Users\ashr\source\repos\netrefject\testlibrary\bin\Debug\netstandard2.0\testlibrary.dll";
-        string filename = "/home/ashr/dev/customShit/Code/netrefject-git/testlibrary/bin/Debug/netstandard2.0/testlibrary.dll";
+        string filename = "/home/ashr/dev/customShit/Code/netrefject-git/testlibrary/bin/Debug/netcoreapp2.0/testlibrary.dll";
         Worker w = new Worker();
         w.HandleInjectionFlow(filename);
     }
