@@ -1,4 +1,0 @@
-/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.2/testconsole.csprojAssemblyReference.cache
-/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.2/testconsole.csproj.CoreCompileInputs.cache
-/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.2/testconsole.AssemblyInfoInputs.cache
-/home/ashr/dev/customShit/Code/netrefject-git/testconsole/obj/Debug/netcoreapp2.2/testconsole.AssemblyInfo.cs
