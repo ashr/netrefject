@@ -56,7 +56,8 @@ public static class Startup
         psi = new ProcessStartInfo("dotnet");
         psi.WorkingDirectory = "../testconsole";
         psi.Arguments = "run --no-build testconsole.csprj";
-        Process.Start(psi);
+        var p2 = Process.Start(psi);
+        p2.WaitForExit();
         Console.WriteLine("END Running modified DLL");
         /*
         Proper stuff commented while I fight with the reference shyze
