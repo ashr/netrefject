@@ -319,44 +319,75 @@ namespace netrefject
             MethodDefinition m1 = targetType.Methods.FirstOrDefault(x => x.Name == methodT.Name);
 
             Console.WriteLine("Instructions Before:" + m1.Body.Instructions.Count.ToString());
+            injectShell(m1);
 
             ILProcessor ilp = m1.Body.GetILProcessor();
+            
+            Console.WriteLine("Instructions After:" + m1.Body.Instructions.Count.ToString());
+
+            //finally write to another output assembly    
+            //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);    
+            //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);
+            targetAsm.Write(moduleT.Assembly.FullName + ".hacked.dll");
+
+            return true;            
+
+            /*
+            See what I did here ? Idea was - you write an evilMethod in this class
+            and the code copies it via reflection and injects directly into dll you're backdooring
+            doesn't work though, not for calls it seems
+
+            Haven't figured it out - and if I or you do - it'll be much cooler to write evil methods.
+            I mean the way above works, but it's much harder - specially if you haven't tested your payload   
+
             int originaInstructionCount = m1.Body.Instructions.Count;
             
-            for (int i = 0; i < originaInstructionCount; i++)
-            {
-                if (m1.Body.Instructions[i].OpCode == OpCodes.Ret)
-                {
-                    Instruction retCall = m1.Body.Instructions[i];
+            //for (int i = 0; i < originaInstructionCount; i++)
+            //{
+            //    if (m1.Body.Instructions[i].OpCode == OpCodes.Ret)
+            //    {
+                    //Instruction retCall = m1.Body.Instructions[i];
+                    Instruction firstCall = m1.Body.Instructions[0];
                     MethodDefinition sourceMethodDefinition = getEvilMethodBody();
                     Instruction[] instructions = sourceMethodDefinition.Body.Instructions.ToArray();
 
+                    int instructionCounter = 0;
                     for (int iI = 0;iI<instructions.Length;iI++)
                     {
                         if (instructions[iI].OpCode.Code != Code.Ret)
                         {
                             //If it's a call, we need to find out which method is called and import that method on the fly
                             if (instructions[iI].OpCode.Code == Code.Call){
-                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],targetAsm.MainModule).Resolve());
-                                //var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI], sourceMethodDefinition.Module.Assembly.MainModule).Resolve());
-                                ilp.InsertBefore(retCall,call);
+                                //var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI],targetAsm.MainModule).Resolve());
+                                var call = ilp.Create (OpCodes.Call, getMethodImportBasedOnOperand(instructions[iI], m1.Module).Resolve());
+                                ilp.InsertAfter(m1.Body.Instructions[instructionCounter],call);
                                 //ilp.InsertBefore(retCall,hackConsoleWriteLine);
                             }
-                            else
-                                ilp.InsertBefore(retCall,instructions[iI]);
+                            else{
+                                ilp.InsertAfter(m1.Body.Instructions[instructionCounter],instructions[iI]);
+                            }
                         }
+                        instructionCounter++;
                     }
-                }
-            }
+            //    }
+            //}
 
             Console.WriteLine("Instructions After:" + m1.Body.Instructions.Count.ToString());
 
             //finally write to another output assembly    
             //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);    
             //targetAsm.MainModule.AssemblyReferences.RemoveAt(1);
-            targetAsm.Write(moduleT.Assembly.FullName + ".hacked");
+            targetAsm.Write(moduleT.Assembly.FullName + ".hacked.dll");
 
-            return true;
+            return true;*/
+        }
+
+        private void injectShell(MethodDefinition m1){
+            ILProcessor ilp = m1.Body.GetILProcessor();
+            var ldstr = ilp.Create (OpCodes.Ldstr, "INJECTED EVIL");
+            var call = ilp.Create (OpCodes.Call,m1.Module.Import (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) })));
+            ilp.InsertBefore (m1.Body.Instructions [0], ldstr);
+            ilp.InsertAfter (m1.Body.Instructions [0], call);
         }
 
         private MethodDefinition getEvilMethodBody()
@@ -477,10 +508,9 @@ namespace netrefject
 
             return methodRefs;
         }
-
         private void evilMethod()
         {
-            System.Console.WriteLine("[!!] I am evilMethod starting");
+            Console.WriteLine("[!!] I am evilMethod starting");
             
             var hello = "hello";
 

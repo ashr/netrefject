@@ -25,6 +25,15 @@ public static class Startup
             Worker.syntax();
             return;
         }*/
+
+        /*
+        Proper stuff commented while I fight with the reference shyze
+        */
+        string filename = "../testlibrary/bin/Debug/netcoreapp2.0/testlibrary.dll";
+        Worker w = new Worker();
+        w.HandleInjectionFlow(filename);
+        return;
+
         Console.WriteLine("START Running unmodified DLL");
         ProcessStartInfo psi = new ProcessStartInfo("dotnet");
         psi.WorkingDirectory = "../testconsole";
@@ -32,8 +41,6 @@ public static class Startup
         var p1 = Process.Start(psi);
         p1.WaitForExit();
         Console.WriteLine("END Running unmodified DLL");
-
-        string filename = "../testlibrary/bin/Debug/netcoreapp2.0/testlibrary.dll";
 
         AssemblyDefinition targetAsm = AssemblyDefinition.ReadAssembly(filename);
         TypeDefinition targetType = targetAsm.MainModule.Types.FirstOrDefault(x => x.Name == "Testclass");
@@ -45,6 +52,8 @@ public static class Startup
         var call = ilp.Create (OpCodes.Call,m1.Module.Import (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) })));
         ilp.InsertBefore (m1.Body.Instructions [0], ldstr);
         ilp.InsertAfter (m1.Body.Instructions [0], call);
+
+
         targetAsm.Write("TESTASM.dll");
 
 
@@ -59,10 +68,5 @@ public static class Startup
         var p2 = Process.Start(psi);
         p2.WaitForExit();
         Console.WriteLine("END Running modified DLL");
-        /*
-        Proper stuff commented while I fight with the reference shyze
-        Worker w = new Worker();
-        w.HandleInjectionFlow(filename);
-        */
     }
 }
