@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace testlibrary
 {
@@ -7,6 +8,8 @@ namespace testlibrary
         public Testclass()
         {
             Console.WriteLine("This is Constructor");
+            WebClient wc =new WebClient();
+            byte[] data = wc.DownloadData("http://joupoes");
         }
 
         public void TestMethod()
