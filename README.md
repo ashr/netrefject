@@ -12,13 +12,9 @@ just committed a fix to allow you to debug with vscode and be able to send stdin
 
 [Current State]
 
-I have commented out the bulky module selection stuff to debug the current code to fix what i've mentioned below
+WebClient.DownloadData working... Should have a payload running soon barring me running into new walls
 
-The current state works by injecting a Console.WriteLine as you can see from the screenshot
-
-Seems like my ideas are working, just need to kill ze bugs
-
-![injected-evil](./injected-evil.png)
+![process](./netrefject.gif)
 
 [End Current]
 
