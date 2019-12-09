@@ -12,23 +12,10 @@ just committed a fix to allow you to debug with vscode and be able to send stdin
 
 [Current State]
 
-WebClient.DownloadData working... Should have a payload running soon barring me running into new walls
+Full payload injection with remote and local .Net payloads !
 
 ![process](./netrefject.gif)
-
 [End Current]
 
 
-The module import code (Injecting Extern calls to native .Net methods) has been modified to import 
-and add the extern calls, but there is an issue - if you can help - hook me up please.
-
-If you look at the screenshot below it looks as if the extern method .ver metadata is incorrect - 
-i'm busy investigating this and it seems to be the last issue I need to solve to get a proper payload in.
-
-![extern-calls](./extern-versions.png)
-
-In this screenshot you can see the 'Evil' code has been added to the TestMethod, that part works fine,
-just the method refs that needs to be sorted.
-
-![injected-code](./injected-code.png)
-
+More payloads and some refined code coming soon !
