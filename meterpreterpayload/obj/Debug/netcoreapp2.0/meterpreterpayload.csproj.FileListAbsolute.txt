@@ -1,0 +1,9 @@
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.csprojAssemblyReference.cache
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.csproj.CoreCompileInputs.cache
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.AssemblyInfoInputs.cache
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.AssemblyInfo.cs
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/bin/Debug/netcoreapp2.0/meterpreterpayload.deps.json
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/bin/Debug/netcoreapp2.0/meterpreterpayload.dll
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/bin/Debug/netcoreapp2.0/meterpreterpayload.pdb
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.dll
+/home/ashr/dev/customShit/Code/netrefject-git/meterpreterpayload/obj/Debug/netcoreapp2.0/meterpreterpayload.pdb

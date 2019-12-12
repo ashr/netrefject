@@ -12,7 +12,7 @@ public static class Startup
     public static void Main(string[] args)
     {
         Console.WriteLine(args.Length);
-        if (args.Length != 3)
+        if (args.Length != 4)
         {
             Worker.syntax();
             return;
@@ -21,6 +21,7 @@ public static class Startup
         string filename = args[0];
         string payloadURI = args[1];
         string payloadMethod = args[2];
+        string payloadClass = args[3];
 
         if (!filename.EndsWith("dll"))
         {
@@ -28,7 +29,7 @@ public static class Startup
             return;
         }
         
-        new Worker().HandleInjectionFlow(filename,payloadURI,payloadMethod);    
+        new Worker().HandleInjectionFlow(filename,payloadURI,payloadMethod, payloadClass);    
         return;
 
         /*

