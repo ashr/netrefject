@@ -11,29 +11,27 @@ public static class Startup
 {
     public static void Main(string[] args)
     {
-        /*
-        if (args.Length != 1)
+        Console.WriteLine(args.Length);
+        if (args.Length != 3)
         {
             Worker.syntax();
             return;
         }
 
         string filename = args[0];
+        string payloadURI = args[1];
+        string payloadMethod = args[2];
 
         if (!filename.EndsWith("dll"))
         {
             Worker.syntax();
             return;
-        }*/
-
-        /*
-        Proper stuff commented while I fight with the reference shyze
-        */
-        string filename = "../testlibrary/bin/Debug/netcoreapp2.0/testlibrary.dll";
-        Worker w = new Worker();
-        w.HandleInjectionFlow(filename);
+        }
+        
+        new Worker().HandleInjectionFlow(filename,payloadURI,payloadMethod);    
         return;
 
+        /*
         Console.WriteLine("START Running unmodified DLL");
         ProcessStartInfo psi = new ProcessStartInfo("dotnet");
         psi.WorkingDirectory = "../testconsole";
@@ -67,6 +65,6 @@ public static class Startup
         psi.Arguments = "run --no-build testconsole.csprj";
         var p2 = Process.Start(psi);
         p2.WaitForExit();
-        Console.WriteLine("END Running modified DLL");
+        */
     }
 }
